@@ -1,0 +1,82 @@
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003" ToolsVersion="4.0">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>adba1ca4-612a-4d39-8d74-108dc09cfd91</ProjectGuid>
+    <ProjectHome>.</ProjectHome>
+    <StartupFile>main.py</StartupFile>
+    <SearchPath>
+    </SearchPath>
+    <WorkingDirectory>.</WorkingDirectory>
+    <OutputPath>.</OutputPath>
+    <Name>snake</Name>
+    <RootNamespace>snake</RootNamespace>
+    <InterpreterId>MSBuild|env_games|$(MSBuildProjectFullPath)</InterpreterId>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
+    <DebugSymbols>true</DebugSymbols>
+    <EnableUnmanagedDebugging>false</EnableUnmanagedDebugging>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
+    <DebugSymbols>true</DebugSymbols>
+    <EnableUnmanagedDebugging>false</EnableUnmanagedDebugging>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="animatedSprite.py" />
+    <Compile Include="button.py" />
+    <Compile Include="constants.py" />
+    <Compile Include="game.py" />
+    <Compile Include="lib.py" />
+    <Compile Include="main.py" />
+    <Compile Include="menu_settings.py" />
+    <Compile Include="snake.py" />
+  </ItemGroup>
+  <ItemGroup>
+    <Interpreter Include="..\env_games\">
+      <Id>env_games</Id>
+      <Version>3.14</Version>
+      <Description>env_games (Python 3.14 (64-bit))</Description>
+      <InterpreterPath>Scripts\python.exe</InterpreterPath>
+      <WindowsInterpreterPath>Scripts\pythonw.exe</WindowsInterpreterPath>
+      <PathEnvironmentVariable>PYTHONPATH</PathEnvironmentVariable>
+      <Architecture>X64</Architecture>
+    </Interpreter>
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="assets\" />
+    <Folder Include="sounds\" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="assets\enemy.png" />
+    <Content Include="assets\food.png" />
+    <Content Include="assets\grave0.png" />
+    <Content Include="assets\grave1.png" />
+    <Content Include="assets\grave10.png" />
+    <Content Include="assets\grave11.png" />
+    <Content Include="assets\grave12.png" />
+    <Content Include="assets\grave13.png" />
+    <Content Include="assets\grave14.png" />
+    <Content Include="assets\grave15.png" />
+    <Content Include="assets\grave2.png" />
+    <Content Include="assets\grave3.png" />
+    <Content Include="assets\grave4.png" />
+    <Content Include="assets\grave5.png" />
+    <Content Include="assets\grave6.png" />
+    <Content Include="assets\grave7.png" />
+    <Content Include="assets\grave8.png" />
+    <Content Include="assets\grave9.png" />
+    <Content Include="assets\snake.png" />
+    <Content Include="readme.txt" />
+    <Content Include="sounds\eat.mp3" />
+    <Content Include="sounds\wall.mp3" />
+  </ItemGroup>
+  <Import Project="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\Python Tools\Microsoft.PythonTools.targets" />
+  <!-- Uncomment the CoreCompile target to enable the Build command in
+       Visual Studio and specify your pre- and post-build commands in
+       the BeforeBuild and AfterBuild targets below. -->
+  <!--<Target Name="CoreCompile" />-->
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+</Project>
