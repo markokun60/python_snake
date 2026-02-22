@@ -1,4 +1,6 @@
+from tkinter import BUTT
 from typing import Final
+from button import Button
 
 #Collors
 
@@ -19,13 +21,14 @@ GRAY_LIGHT  = (212,212,212)
 #
 # THEME
 #
-TEXT_COLOR  = WHITE
-BK          = GRAY_DARK
-FIELD_COLOR = GRAY 
+TEXT_COLOR       = WHITE
+BK               = GRAY_DARK
+FIELD_COLOR      = GRAY 
 SNAKE_BODY_COLOR = GREEN
 SNAKE_HEAD_COLOR = GREEN_DARK
 SNAKE_TONG_COLOR = RED
-GRID_COLOR = BK
+GRID_COLOR       = BK
+
 
 VELOCITIES = [(-1,0),(1,0),(0,-1),(1,0)]
 FONTS      = 'Arial, Helvetica, sans-serif'
@@ -164,8 +167,16 @@ def set_shema(bk,field_clr,txt_clr,snake_body_clr,snake_head_clr,snake_tong_clr 
     SNAKE_TONG_COLOR = snake_tong_clr
     GRID_COLOR       = BK
 
+    Button.CLR_BTN      = (220, 220, 220)
+    Button.CLR_BTN_CHNG = (255, 0, 0)
+    Button.CLR_BTN_HINT = (255, 255, 255)
+  
+
 def red_shema():
     set_shema(RED,ORANGE,WHITE,BLUE,BLUE,BLUE_DARK)  
+    Button.CLR_BTN      = (220, 220, 220)
+    Button.CLR_BTN_CHNG = (127, 127, 255)
+    Button.CLR_BTN_HINT = BLACK
 
 def green_shema():
     set_shema(GREEN_DARK,GREEN,WHITE,BLUE,BLUE)  
@@ -175,11 +186,12 @@ def gray_shema():
     
 def black_shema():
     global GRID_COLOR
-    set_shema(BLACK,BLACK,WHITE,RED,RED_DARK) 
+    set_shema(BLACK,BLACK,WHITE,RED,(255,64,64)) 
     GRID_COLOR = GRAY_DARK
 
 def white_schema():
     set_shema(WHITE,GRAY_LIGHT,BLACK,BLACK,GRAY_DARK) 
+    Button.CLR_BTN_HINT = BLACK
 
 def set_shema_by_name(theme):
     if theme == THEME_FOREST:

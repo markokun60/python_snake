@@ -36,6 +36,7 @@ class SnakeCell:
             color = constants.SNAKE_HEAD_COLOR
           
             pygame.draw.circle(window,color,(x,y),constants.CELL_SIZE/2)
+            #pygame.draw.circle(window,(255,255,255),(x,y),2)
             
             color_tong = constants.SNAKE_TONG_COLOR
             if self.velocity == 'U': 
@@ -156,7 +157,7 @@ class Snake:
     def get_status(self):
         field_size = constants.ROWS * constants.COLS
         field_size -= constants.MAX_ENEMIES
-        y =  field_size * 0.9
+        y = field_size * 0.9
         x = len(self.body) / y
         if x > 1:
             x = 1

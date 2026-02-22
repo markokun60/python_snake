@@ -1,6 +1,9 @@
+#import subprocess
+
 import pygame
 import random
 import time
+from pygame import image
 import pygame_menu as pm
 from pygame_menu import themes
 
@@ -70,40 +73,39 @@ y_button = 100
 W_BUTTON = 110
 H_BUTTON = 50
 
-CLR_BTN = (220, 220, 220)
-CLR_BTN_CHNG = (255, 0, 0)
 
-btnStart = Button(position=(x_button, y_button), size=(W_BUTTON, H_BUTTON), clr=CLR_BTN, cngclr=CLR_BTN_CHNG, func=game.start, text='Start')
-btnStart.image = imgStart
+btnStart = Button(position=(x_button, y_button), size=(W_BUTTON, H_BUTTON), func=game.start, text='Start',image = imgStart)
+btnStart.hint  = "Start play the game"
 
-btnBack = Button(position=(x_button, y_button),  size=(W_BUTTON, H_BUTTON), clr=CLR_BTN, cngclr=CLR_BTN_CHNG, func=back, text='Back')
-btnBack.hide = True
-btnBack.image = imgBack
+btnBack = Button(position=(x_button, y_button),  size=(W_BUTTON, H_BUTTON),  func=back, text='Back',image=imgBack)
+btnBack.hide  = True
+btnBack.hint  = "Back to main menu" 
 
 x_button += W_BUTTON
 x_button += 10
-btnAbout = Button(position=(x_button, y_button), size=(W_BUTTON, H_BUTTON), clr=CLR_BTN, cngclr=CLR_BTN_CHNG, func=about, text='About')
-btnAbout.image = imgSnake
+btnAbout = Button(position=(x_button, y_button), size=(W_BUTTON, H_BUTTON),  func=about, text='About',image=imgSnake)
+btnAbout.hint  = "Show about information"
 
 x_button += W_BUTTON
 x_button += 10
-btnHelp = Button(position=(x_button, y_button), size=(W_BUTTON, H_BUTTON), clr=CLR_BTN, cngclr=CLR_BTN_CHNG, func=help, text='Help')
-btnHelp.image = imgHelp
+btnHelp = Button(position=(x_button, y_button), size=(W_BUTTON, H_BUTTON),  func=help, text='Help',image=imgHelp)
+btnHelp.hint  = "Show how to play"
 
 x_button += W_BUTTON
 x_button += 10
-btnOptions = Button(position=(x_button, y_button), size=(W_BUTTON, H_BUTTON), clr=CLR_BTN, cngclr=CLR_BTN_CHNG, func=menu_settings, text='Options')
-btnOptions.image = imgOptions
+btnOptions = Button(position=(x_button, y_button), size=(W_BUTTON, H_BUTTON),  func=menu_settings, text='Options',image=imgOptions)
+btnOptions.hint  = "Change settings"
 
 x_button += W_BUTTON
 x_button += 10
-btnExit = Button(position=(x_button, y_button), size=(W_BUTTON, H_BUTTON), clr=CLR_BTN, cngclr=CLR_BTN_CHNG, func=exit_game, text='Exit')
-btnExit.image = imgExit
-
+btnExit = Button(position=(x_button, y_button), size=(W_BUTTON, H_BUTTON), func=exit_game, text='Exit',image=imgExit)
+btnExit.hint  = "Exit the game"
 
 buttons = [btnStart,btnAbout,btnHelp,btnBack,btnOptions,btnExit]
+
 def hide_show_buttins():
     for b in buttons:
+        b.reset()
         b.hide = not b.hide
  
  
@@ -145,7 +147,6 @@ def draw():
         game.draw_play(window)
     pygame.display.update()
 
-
 def main():
     global show_settings_menu
     FPS = 3
@@ -167,7 +168,8 @@ def main():
             clock.tick(60)
         else:      
             clock.tick(FPS * (game.level+1))  
-            
+         
+        cmd = 0    
         events = pygame.event.get()    
 
         for event in events:
@@ -176,14 +178,33 @@ def main():
                 run = False
                 break 
             elif event.type == pygame.MOUSEBUTTONDOWN:
+              
                 if event.button == 1:
                     pos = pygame.mouse.get_pos()
+                  
+                    if game.snake.mode == constants.MODE_PLAY:
+                        x, y = pos
+                        if x < constants.FIELD_BORDER_LEFT and y > constants.FIELD_BORDER_TOP and y < constants.HEIGHT - constants.FIELD_BORDER_RIGHT:
+                            cmd =constants.CMD_LEFT
+                        elif x > constants.WIDTH - constants.FIELD_BORDER_RIGHT and y > constants.FIELD_BORDER_TOP and y < constants.HEIGHT - constants.FIELD_BORDER_RIGHT:
+                            cmd = constants.CMD_RIGHT
+                        elif y < constants.FIELD_BORDER_TOP:
+                            cmd = constants.CMD_UP
+                        elif y >=  constants.HEIGHT - constants.FIELD_BORDER_RIGHT:
+                            cmd = constants.CMD_DOWN
+                    #else: 
+                    #    for b in buttons:
+                    #        if not b.hide:
+                    #            if b.rect.collidepoint(pos):
+                    #                b.call_back()
+                    #                break
+            elif event.type == pygame.MOUSEBUTTONUP:
+                if event.button == 1:
                     for b in buttons:
-                        if not b.hide:
-                            if b.rect.collidepoint(pos):
-                                b.call_back()
-                                break
-
+                            if not b.hide:
+                                if b.rect.collidepoint(pos):
+                                    b.call_back()
+                                    break
             elif event.type == pygame.KEYDOWN:
                 if game.snake.mode != constants.MODE_PLAY:
                     if event.key == pygame.K_SPACE: 
@@ -191,16 +212,27 @@ def main():
                             game.snake.mode = constants.MODE_WELCOME
                         else:
                             game.start()
-                    elif event.key == pygame.K_F1:
-                        help()
-                    elif event.key == pygame.K_F2:
-                        about()
-                  
+                    elif event.key == pygame.K_F1 or event.key == pygame.K_h:
+                        if not btnHelp.hide:
+                            btnHelp.call_back()
+                    elif event.key == pygame.K_F2 or event.key == pygame.K_a:
+                        if not btnAbout.hide:
+                             btnAbout.call_back()
+                    elif event.key == pygame.K_ESCAPE:
+                       if not btnBack.hide:
+                            btnBack.call_back()
+                    elif event.key == pygame.K_o:
+                       if not btnOptions.hide:
+                            btnOptions.call_back()  
+                    elif event.key == pygame.K_e:
+                       if not btnExit.hide:
+                            btnExit.call_back() 
+                                  
                 elif event.key == pygame.K_SPACE:
                     game.pause_resume()
                    
                 elif not game.snake.is_paused:
-                    cmd = 0
+                  
                     if event.key == pygame.K_LEFT or event.key == pygame.K_a:
                         cmd = constants.CMD_LEFT
                     elif event.key == pygame.K_RIGHT or event.key == pygame.K_d: 
@@ -213,9 +245,12 @@ def main():
                         cmd = constants.CMD_T_LEFT
                     elif  event.key == pygame.K_x:
                         cmd = constants.CMD_T_RIGHT
-                    
-                    if cmd != 0:
-                        game.commands.append(cmd)
+                                 
+                if cmd != 0:
+                    game.commands.append(cmd)
+                    cmd = 0
+
+ 
 
         if game.snake.mode == constants.MODE_AGONY:
             if not game.grave.update():
@@ -227,5 +262,11 @@ def main():
     pygame.quit()
 
 
+   
+
+#def hide_console():
+   #subprocess.Popen(["python", "snake.py"], creationflags=subprocess.CREATE_NO_WINDOW)
+
 if __name__ == "__main__":
+    #hide_console()
     main()

@@ -180,15 +180,16 @@ class Game:
                 self.WALL_SOUND.play()
             (r,c) = self.snake.get_head()
             print(f"Snake is dead {r,c}")
+            grave_d = 1
             if r > 10:
-                r -= 2
+                r -= grave_d
             else:
-                r += 2
+                r += grave_d
 
             if c > 10:
-                c -= 2
+                c -= grave_d
             else:
-                c += 2
+                c += grave_d
         
             x = constants.col_to_x(c)
             y = constants.row_to_y(r)
