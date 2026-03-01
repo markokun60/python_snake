@@ -1,8 +1,3 @@
-# Source - https://stackoverflow.com/a/63435568
-# Posted by Girish Hegde
-# Retrieved 2026-02-11, License - CC BY-SA 4.0
-
-from tkinter import SE
 import pygame
 
 import constants

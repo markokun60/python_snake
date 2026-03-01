@@ -1,3 +1,4 @@
+from ast import Constant
 from asyncio.sslproto import add_flowcontrol_defaults
 from pickle import FALSE
 import pygame
@@ -13,7 +14,7 @@ from  animatedSprite import AnimatedSprite
 
 def draw_text(window,source,fnt ,other_height = 0):
     text = fnt.render(source,1,constants.TEXT_COLOR ) 
-    x = int((constants.WIDTH_WOINDOW - text.get_width ())/2)
+    x = int((constants.WIDTH_WINDOW - text.get_width ())/2)
     y = int((constants.HEIGHT_WINDOW - text.get_height() - other_height)/2)
     if x < 0 :
         x = 0
@@ -27,23 +28,58 @@ def draw_grid(window):
             x = constants.col_to_x(c)
             pygame.draw.rect(window,constants.GRID_COLOR,(x,y,constants.CELL_SIZE,constants.CELL_SIZE),1)
 
-def draw_welcome_text(window,fnt):
-    source = """
-You are a snake. The goal of the game is grow, grow and grow.
-To grow you need a food. 
-This won\'t the problems for you: a lot of tasty rabbits will be around.
+class SummaryValues:
+    def __init__(self,name):
+        self.name = name
+        self.highscore   = {
+            constants.AI    :0,
+            constants.HUMAN :0
+        }
+        self.highsize   = {
+            constants.AI    :0,
+            constants.HUMAN :0
+        }
+        self.total_games = {
+            constants.AI    :0,
+            constants.HUMAN : 0
+        }
+        self.avg_score   = {
+            constants.AI    :0.0,
+            constants.HUMAN :0.0
+    }
+    def read(self,config):
+         for code in [constants.HUMAN,constants.AI]: 
+            section = f'{self.name}_{code}'
+            self.highscore[code]   = config.getint(section, constants.KEY_HIGH_SCORE , fallback=self.highscore[code] )
+            self.total_games[code] = config.getint(section, constants.KEY_TOTAL_GAMES , fallback=self.total_games[code] )
+            self.avg_score[code]   = config.getfloat(section, constants.KEY_AVG_SCORE , fallback=self.avg_score[code] )
+            self.highsize[code]    = config.getint(section , constants.KEY_HIGH_SIZE , fallback=self.highsize[code] )
 
-But be caution! 
-The mongooses are need food too and you are their favorite food.
+    def save(self,config):
+        for code in [constants.HUMAN,constants.AI]: 
+            section = f'{self.name}_{code}'
+            config[section] = {
+                constants.KEY_HIGH_SCORE : self.highscore[code],
+                constants.KEY_TOTAL_GAMES: self.total_games[code],
+                constants.KEY_AVG_SCORE  : self.avg_score[code],
+                constants.KEY_HIGH_SIZE  : self.highsize[code]    
+            }
 
-Others very dangerous spots for you are the edges of the field. 
-You can\'t live without moving.
-The edge stops and kills you.
+    def new_score(self,score,code,size):
 
-Press SPACE or button "Start" to play
-"""
-    return draw_text(window,source,fnt)
+        sum_score = self.avg_score[code] * (self.total_games[code]-1)
+        sum_score += score
+            
+        self.avg_score[code] = sum_score / self.total_games[code]
 
+        if size > self.highsize[code]:
+            self.highsize[code] = size
+
+        if score > self.highscore[code]:
+            self.highscore[code] = score
+            return True
+
+        return False
 
 class Game:  
     def __init__(self,big_text_font,info_text_font):
@@ -51,9 +87,16 @@ class Game:
         self.is_grid  = False
         self.is_grow_by_food_only = False
         self.is_food_always = True
+        self.is_AI = False
         self.player_name = 'user'
         self.theme    = constants.THEME_GRAY
         self.level    = 0
+        self.board_size = 0
+       
+        self.summaryValues = []
+        for i in range(len(constants.SIZES)):
+            self.summaryValues.append(SummaryValues(constants.SIZE_NAMES[i]))
+
         self.read_config()
         constants.set_shema_by_name(self.theme)
 
@@ -87,20 +130,27 @@ class Game:
         self.start_time = time.time()
         self.commands = []
         self.status = 0
-        self.highscore   = 0
-        self.total_games = 0 
-        self.avg_score   = 0.0
-        self.load_statistics()
+        self.summary = self.summaryValues[self.board_size]
+        #
+        self.player_code = constants.HUMAN
        
-            
+
+        self.load_statistics()
+                  
         #print(f"high score {self.highscore}")
 
+    def set_board_size(self,i):
+        self.board_size = i
+        self.summary = self.summaryValues[self.board_size]
+       
+
     def start(self):
+        self.player_code = constants.AI if self.is_AI else constants.HUMAN
         self.elapsed_time = 0  
         self.paused_time  = 0
         self.start_time = time.time()
         self.pause_started = None
-        self.total_games += 1
+        self.summary.total_games[self.player_code] += 1
         self.status = 0
         self.commands.clear()
         self.snake.start()
@@ -136,9 +186,9 @@ class Game:
             cmd = self.commands.pop()
             x = 0
             y = 0
-            if cmd == constants.CMD_LEFT: x -= 1
+            if   cmd == constants.CMD_LEFT: x -= 1
             elif cmd == constants.CMD_RIGHT:x += 1
-            elif cmd == constants.CMD_UP: y -= 1
+            elif cmd == constants.CMD_UP:   y -= 1
             elif cmd == constants.CMD_DOWN: y += 1
             elif cmd == constants.CMD_T_LEFT:
                 x,y = self.turn_left()
@@ -196,13 +246,13 @@ class Game:
 
             self.grave.set_xy(x,y)
             score = self.snake.get_size()
-            sum_score = self.avg_score * (self.total_games-1)
-            sum_score += score
+           
+            if self.summary.new_score(score,self.player_code,self.snake.get_size()):
 
-            self.avg_score = sum_score / self.total_games
-            if score > self.highscore:
-                self.highscore = score
-                self.set_prompt(f"Game over: {self.snake.message}. You finished with highest score. Click SPACE to continue")
+                if self.is_AI:
+                    self.set_prompt(f"Game over: {self.snake.message}. AI finished with highest score. Click SPACE to continue")
+                else:
+                    self.set_prompt(f"Game over: {self.snake.message}. You finished with highest score. Click SPACE to continue")
             else:
                 self.set_prompt(f"Game over: {self.snake.message}. Click SPACE to continue")
             self.save_statistics()    
@@ -264,6 +314,13 @@ class Game:
                 else:
                     self.set_prompt("New mongoose. This is the last one")
 
+    def get_high_status_name(self,code):
+        size = self.summary.highsize[code]
+        if size == 0:
+            return 'Egg'
+        status=  self.snake.get_status(size)
+        return constants.SnakeStatus[status]
+
 
     def turn_left(self):
         x = self.snake.x_velocity
@@ -305,6 +362,9 @@ class Game:
         x      = 4
         y      = constants.FIELD_BORDER_TOP
         width  = constants.FIELD_BORDER_LEFT - x * 2
+        if width > constants.CELL_SIZE:
+            width = constants.CELL_SIZE
+            x = (constants.FIELD_BORDER_LEFT - width)/2
         height = constants.HEIGHT
         done = self.snake.get_progress()
         wDone = int(height * done) 
@@ -346,7 +406,7 @@ class Game:
         score *= (self.level + 1)
         source = f"Score: {score}"
         text   = self.info_text_font.render(source,1,constants.TEXT_COLOR ) 
-        x = constants.WIDTH_WOINDOW-10
+        x = constants.WIDTH_WINDOW-10
         y = 0
         window.blit(text,(x-text.get_width(),y))
 
@@ -357,12 +417,12 @@ class Game:
             source = constants.SnakeStatus[self.status]
 
         text   = self.info_text_font.render(source,1,constants.TEXT_COLOR ) 
-        x = constants.WIDTH_WOINDOW/2
+        x = constants.WIDTH_WINDOW/2
         y = 0
         window.blit(text,(x-text.get_width()/2,y))
 
     def draw_smake_img(self,window,y):
-        x = int(constants.WIDTH_WOINDOW - self.SNAKE_IMAGE.get_width())/2
+        x = int(constants.WIDTH_WINDOW - self.SNAKE_IMAGE.get_width())/2
         window.blit(self.SNAKE_IMAGE,(x,y))
 
     def draw_prompt(self,window):
@@ -372,16 +432,43 @@ class Game:
             window.blit(text,(0,y))
 
     def draw_about_text(self,window):
+        status_human = self.get_high_status_name(constants.HUMAN) 
+        status_AI    = self.get_high_status_name(constants.AI) 
+
+        board_size_name = constants.SIZE_NAMES[self.board_size]
         source = f"""
 Snake.
-Version 1.0.0
-Made by Mark Okun
+Version {constants.VERSION}
+Made by {constants.AUTHOR}
 
-Total games: {self.total_games}
-High score:  {self.highscore}
-Avg score:   {round(self.avg_score,2)}
+
+User summary for {board_size_name} board
+
+Total games: {self.summary.total_games[constants.HUMAN]}
+High score/size/status:  {self.summary.highscore[constants.HUMAN]} / {self.summary.highsize[constants.HUMAN]} / {status_human}
+Avg score:   {round(self.summary.avg_score[constants.HUMAN],2)}
         """
-        y = draw_text(window,source,self.big_text_font,self.SNAKE_IMAGE.get_height())
+        source_ai = f"""
+Snake.
+Version {constants.VERSION}
+Made by {constants.AUTHOR}
+
+User summary for {board_size_name} board
+------------
+Total games: {self.summary.total_games[constants.HUMAN]}
+High score/size/status:  {self.summary.highscore[constants.HUMAN]} / {self.summary.highsize[constants.HUMAN]} / {status_human}
+Avg score:   {round(self.summary.avg_score[constants.HUMAN],2)}
+
+AI summary for {board_size_name} board
+------------
+Total games: {self.summary.total_games[constants.AI]}
+High score/size/status:  {self.summary.highscore[constants.AI]} / {self.summary.highsize[constants.AI]} / {status_AI}
+Avg score:   {round(self.summary.avg_score[constants.AI],2)}
+        """
+
+        s =  source_ai if self.summary.total_games[constants.AI] > 0 else source
+
+        y = draw_text(window,s,self.big_text_font,self.SNAKE_IMAGE.get_height())
         y += 10
         self.draw_smake_img(window,y)
 
@@ -399,7 +486,45 @@ To start new game press - space
     """
 
         y = draw_text(window,source,self.big_text_font)
-        self.draw_smake_img(window,y)
+        self.draw_smake_img(window,y) 
+
+    def draw_welcome_text(self,window,fnt):
+        source = """
+    You are a snake. The goal of the game is grow, grow and grow.
+    To grow you need a food. 
+    This won\'t the problems for you: a lot of tasty apples will be around.
+
+    But be caution! 
+    The mongooses are need food too and you are their favorite food.
+
+    Others very dangerous spots for you are the edges of the field. 
+    You can\'t live without moving.
+    The edge stops and kills you.
+
+    Press SPACE or button "Start" to play
+    """
+        source_AI = """
+
+    Check how AI plays the game of snake 
+
+    The goal of the game is grow, grow and grow.
+    To grow snake need a food. 
+    This won\'t the problems : a lot of tasty apples will be around.
+
+    But be caution! 
+    The mongooses are need food too and snake are their favorite food.
+
+    Others very dangerous spots for snake are the edges of the field. 
+    Snake can\'t live without moving.
+    The edge stops and kills the snake
+
+    Press SPACE or button "Start" to play
+    """
+        if self.is_AI: 
+            return draw_text(window,source_AI,fnt)
+        else:
+            return draw_text(window,source,fnt)
+
 
     def draw_play(self,window):
         self.draw_time(window)
@@ -411,25 +536,22 @@ To start new game press - space
         self.draw_prompt(window)
 
     def save_statistics(self):
+        config = configparser.ConfigParser()
+        for s in self.summaryValues:
+            s.save(config)
+      
         file_path = os.path.join(constants.DATA_FOLDER,self.player_name + "_"+ constants.SCORE_FILE)
         with open(file_path, "w") as file:
-            file.write(f'{constants.KEY_HIGH_SCORE} = {self.highscore}\n')
-            file.write(f'{constants.KEY_TOTAL_GAMES} = {self.total_games}\n')
-            file.write(f'{constants.KEY_AVG_SCORE} = {self.avg_score}\n')
+            config.write(file)
+       
 
     def load_statistics(self):
-
         file_path = os.path.join(constants.DATA_FOLDER,self.player_name + "_"+ constants.SCORE_FILE)
         if os.path.isfile(file_path):
-            values = lib.read_variables_from_file(file_path)
-            for key in values.keys():
-                if key==constants.KEY_TOTAL_GAMES:
-                    self.total_games = int(values[key])
-                elif key == constants.KEY_HIGH_SCORE:
-                    self.highscore = int(values[key])
-                elif key == constants.KEY_AVG_SCORE:
-                    self.avg_score = float(values[key])
-                    
+            config = configparser.ConfigParser()
+            config.read(file_path)
+            for s in self.summaryValues:
+                s.read(config)
 
     def save_config(self):
         file_path = os.path.join(constants.DATA_FOLDER,constants.SETTINGS_FILE)
@@ -439,11 +561,13 @@ To start new game press - space
             constants.KEY_PLAYER: self.player_name,
             constants.KEY_THEME : self.theme,
             constants.KEY_GRID  : self.is_grid,
-            constants.KEY_LEVEL : self.level
+            constants.KEY_LEVEL : self.level,
+            constants.KEY_SIZE  : self.board_size
         }
         config[constants.SECTION_RULES] = {
             constants.KEY_GROW_BY_FOOD_ONLY : self.is_grow_by_food_only,
-            constants.KEY_FOOD_ALWAYS       : self.is_food_always
+            constants.KEY_FOOD_ALWAYS       : self.is_food_always,
+            constants.KEY_AI                : self.is_AI
         }
    
         with open(file_path, 'w') as configfile:
@@ -456,16 +580,20 @@ To start new game press - space
             return
         config = configparser.ConfigParser()
         config.read(file_path)
+
         section = constants.SECTION_GENERAL
         self.is_sound    = config.getboolean(section, constants.KEY_SOUND , fallback=self.is_sound )
         self.is_grid     = config.getboolean(section, constants.KEY_GRID  , fallback=self.is_grid )
         self.player_name = config.get       (section, constants.KEY_PLAYER, fallback=self.player_name)
         
-        theme = config.get       (section, constants.KEY_THEME , fallback=self.theme)
+        theme = config.get(section, constants.KEY_THEME , fallback=self.theme)
         if theme in constants.THEMES:
             self.theme = theme
 
-        self.level = config.getint    (section, constants.KEY_LEVEL , fallback=self.level)
+        self.level      = config.getint    (section, constants.KEY_LEVEL , fallback=self.level)
+        #self.board_size = config.getint    (section, constants.KEY_SIZE  , fallback=self.board_size)
+
         section = constants.SECTION_RULES
         self.is_grow_by_food_only = config.getboolean(section, constants.KEY_GROW_BY_FOOD_ONLY , fallback=self.is_grow_by_food_only )
         self.is_food_always       = config.getboolean(section, constants.KEY_FOOD_ALWAYS       , fallback=self.is_food_always )
+        self.is_AI                = config.getboolean(section, constants.KEY_AI                , fallback=self.is_AI )

@@ -17,8 +17,8 @@ pygame.init()
 pygame.font.init()
 pygame.mixer.init()
 
-field_rect = pygame.Rect(constants.FIELD_BORDER_LEFT,constants.FIELD_BORDER_TOP,constants.WIDTH,constants.HEIGHT)
-window = pygame.display.set_mode((constants.WIDTH_WOINDOW,constants.HEIGHT_WINDOW))
+
+window = pygame.display.set_mode((constants.WIDTH_WINDOW,constants.HEIGHT_WINDOW))
 
 big_text_font  = pygame.font.SysFont(constants.FONTS, 18,italic = True )
 info_text_font = pygame.font.SysFont(constants.FONTS, 16,bold=True)
@@ -26,17 +26,20 @@ info_text_font = pygame.font.SysFont(constants.FONTS, 16,bold=True)
 #welcome_font = pygame.font.SysFont("comicsans", 16)
 
 show_settings_menu = False
+
 def close_menu_settings():
     global show_settings_menu
     show_settings_menu = False
     mainSettings.disable()
     hide_show_buttins()
     game.save_config()
+    set_board_size()
 
 game  = Game(big_text_font,info_text_font)
 pygame.display.set_icon(game.SNAKE_IMAGE)
-pygame.display.set_caption("Snake")
-
+pygame.display.set_caption(constants.APP_NAME)
+constants.set_boars_size(game.board_size)
+field_rect = pygame.Rect(constants.FIELD_BORDER_LEFT,constants.FIELD_BORDER_TOP,constants.WIDTH,constants.HEIGHT)
 ms =  menu_settings.MenuSettings(game)
 mainSettings = ms.create(close_menu_settings)
 
@@ -57,6 +60,11 @@ def menu_settings():
     mainSettings.enable()
     global show_settings_menu
     show_settings_menu = True
+
+def set_board_size():
+    global field_rect
+    if constants.set_boars_size(game.board_size):
+        field_rect = pygame.Rect(constants.FIELD_BORDER_LEFT,constants.FIELD_BORDER_TOP,constants.WIDTH,constants.HEIGHT)
 
 def exit_game():
     game.snake.mode = constants.MODE_EXIT
@@ -117,19 +125,20 @@ def draw_buttons():
 
 def draw_exit_message():
     source = f"""
-        
-        Buy {game.player_name}
+        It was fun to play with you, 
+        but now it's time to say
+        Goodbye  {game.player_name}
     """
     fnt  = pygame.font.SysFont(constants.FONTS, 36,italic = True )
     text = fnt.render(source,1,constants.TEXT_COLOR)
-    window.blit(text,(constants.WIDTH_WOINDOW/2 - text.get_width()/2,constants.HEIGHT_WINDOW/2 - text.get_height()/2))
+    window.blit(text,(constants.WIDTH_WINDOW/2 - text.get_width()/2,constants.HEIGHT_WINDOW/2 - text.get_height()/2))
     pygame.display.update()
     pygame.time.delay(3000)
 
 def draw():
     window.fill(constants.BK)
     if game.snake.mode == constants.MODE_WELCOME:
-        draw_welcome_text(window,big_text_font)
+        game.draw_welcome_text(window,big_text_font)
         draw_buttons()
      
     elif game.snake.mode == constants.MODE_ABOUT:
@@ -192,12 +201,7 @@ def main():
                             cmd = constants.CMD_UP
                         elif y >=  constants.HEIGHT - constants.FIELD_BORDER_RIGHT:
                             cmd = constants.CMD_DOWN
-                    #else: 
-                    #    for b in buttons:
-                    #        if not b.hide:
-                    #            if b.rect.collidepoint(pos):
-                    #                b.call_back()
-                    #                break
+
             elif event.type == pygame.MOUSEBUTTONUP:
                 if event.button == 1:
                     for b in buttons:
@@ -206,13 +210,16 @@ def main():
                                     b.call_back()
                                     break
             elif event.type == pygame.KEYDOWN:
-                if game.snake.mode != constants.MODE_PLAY:
-                    if event.key == pygame.K_SPACE: 
-                        if game.snake.mode == constants.MODE_GAME_OVER:
-                            game.snake.mode = constants.MODE_WELCOME
-                        else:
-                            game.start()
-                    elif event.key == pygame.K_F1 or event.key == pygame.K_h:
+                if event.key == pygame.K_SPACE:
+                    if game.snake.mode == constants.MODE_GAME_OVER:
+                        game.snake.mode = constants.MODE_WELCOME
+                    elif game.snake.mode == constants.MODE_PLAY:
+                        game.pause_resume()
+                    else:
+                        game.start()
+              
+                elif  game.snake.mode in(constants.MODES_MENU):
+                    if event.key == pygame.K_F1 or event.key == pygame.K_h:
                         if not btnHelp.hide:
                             btnHelp.call_back()
                     elif event.key == pygame.K_F2 or event.key == pygame.K_a:
@@ -226,13 +233,9 @@ def main():
                             btnOptions.call_back()  
                     elif event.key == pygame.K_e:
                        if not btnExit.hide:
-                            btnExit.call_back() 
-                                  
-                elif event.key == pygame.K_SPACE:
-                    game.pause_resume()
-                   
-                elif not game.snake.is_paused:
-                  
+                            btnExit.call_back()     
+                            
+                elif not game.snake.is_paused and game.snake.mode == constants.MODE_PLAY:
                     if event.key == pygame.K_LEFT or event.key == pygame.K_a:
                         cmd = constants.CMD_LEFT
                     elif event.key == pygame.K_RIGHT or event.key == pygame.K_d: 
@@ -250,12 +253,12 @@ def main():
                     game.commands.append(cmd)
                     cmd = 0
 
- 
-
         if game.snake.mode == constants.MODE_AGONY:
             if not game.grave.update():
                 game.snake.mode = constants.MODE_GAME_OVER
         elif game.snake.is_moving():
+            if game.is_AI:
+                game.snake.ai_move()
             game.step()
         draw()
 

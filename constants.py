@@ -1,6 +1,10 @@
-from tkinter import BUTT
 from typing import Final
 from button import Button
+
+#Apps
+VERSION = "1.1.0"
+AUTHOR  = "Mark Okun"
+APP_NAME= "Snake"
 
 #Collors
 
@@ -49,31 +53,41 @@ BODY_RET_VAL  :Final[int] = ERROR_RET_VAL + 2
 EMENY_RET_VAL :Final[int] = ERROR_RET_VAL + 3
 
 #geometric vaalues
-CELL_SIZE  = 16
-CELL_SIZE2 = CELL_SIZE/2
-ROWS = 32
-COLS = 48
+CELL_SIZE:Final[int] = 16
+CELL_SIZE2           = CELL_SIZE/2
+
+MAX_ROWS:Final[int] = 32
+MAX_COLS:Final[int] = 48
+
+MAX_FIELD_BORDER_TOP    :Final[int]= 32
+MAX_FIELD_BORDER_BOTTOM :Final[int]= 20
+MAX_FIELD_BORDER_LEFT   :Final[int]= 20
+MAX_FIELD_BORDER_RIGHT  :Final[int]= 20
+
+
+WIDTH_WINDOW  = CELL_SIZE * MAX_COLS + MAX_FIELD_BORDER_LEFT + MAX_FIELD_BORDER_RIGHT
+HEIGHT_WINDOW = CELL_SIZE * MAX_ROWS + MAX_FIELD_BORDER_TOP  + MAX_FIELD_BORDER_BOTTOM
+
+ROWS = MAX_ROWS
+COLS = MAX_COLS
 
 WIDTH  = CELL_SIZE * COLS
 HEIGHT = CELL_SIZE * ROWS
 
-FIELD_BORDER_TOP    :Final[int]= 32
-FIELD_BORDER_BOTTOM :Final[int]= 20
-FIELD_BORDER_LEFT   :Final[int]= 20
-FIELD_BORDER_RIGHT  :Final[int]= 20
-
-WIDTH_WOINDOW = WIDTH  + FIELD_BORDER_LEFT + FIELD_BORDER_RIGHT
-HEIGHT_WINDOW = HEIGHT + FIELD_BORDER_TOP  + FIELD_BORDER_BOTTOM
+FIELD_BORDER_TOP    = 32
+FIELD_BORDER_BOTTOM = 20
+FIELD_BORDER_LEFT   = 20
+FIELD_BORDER_RIGHT  = 20
 
 #Folders
 
-ASSET_FOLDER = 'assets'
-SOUND_FOLDER = 'sounds'
-DATA_FOLDER  = 'data'
+ASSET_FOLDER:Final[str]  = 'assets'
+SOUND_FOLDER:Final[str]  = 'sounds'
+DATA_FOLDER :Final[str]  = 'data'
 
 #Files
-SCORE_FILE   = "highscore.txt"
-SETTINGS_FILE= "snake.ini"
+SCORE_FILE   :Final[str] = "statistics.ini"
+SETTINGS_FILE:Final[str] = "snake.ini"
 
 #game properties
 
@@ -83,22 +97,26 @@ STEPS_TO_CREATE_ENEMY:Final[int] = 220
 
 #modes
 
-MODE_PLAY   = 0
-MODE_WELCOME= 1
-MODE_ABOUT  = 2
-MODE_HELP   = 3
-MODE_AGONY  = 4
-MODE_GAME_OVER = 5
-MODE_EXIT  = 6
+MODE_PLAY      :Final[int]= 0
+MODE_CMP_PLAY  :Final[int]= 1
+MODE_WELCOME   :Final[int]= 2
+MODE_ABOUT     :Final[int]= 3
+MODE_HELP      :Final[int]= 4
+MODE_AGONY     :Final[int]= 5
+MODE_GAME_OVER :Final[int]= 6
+MODE_EXIT      :Final[int]= 7
+
+MODES_MENU = [MODE_WELCOME,MODE_ABOUT,MODE_HELP]
+MODES_PLAY = [MODE_PLAY,MODE_CMP_PLAY,MODE_AGONY]
 
 #Commands
 
-CMD_UP   = 1
-CMD_DOWN = 2
-CMD_LEFT = 3
-CMD_RIGHT= 4
-CMD_T_LEFT=5
-CMD_T_RIGHT=6
+CMD_UP     :Final[int]= 1
+CMD_DOWN   :Final[int]= 2
+CMD_LEFT   :Final[int]= 3
+CMD_RIGHT  :Final[int]= 4
+CMD_T_LEFT :Final[int]= 5
+CMD_T_RIGHT:Final[int]= 6
 
 SnakeStatus = [
         "Small Worm",
@@ -112,7 +130,7 @@ SnakeStatus = [
         "Big Adder",
         "Small Ruttle Snake",
         "Ruttle Snake",
-        "Big Snake",
+        "Big Ruttle Snake",
         "Small Cobra",
         "Cobra",
         "Big Cobra",
@@ -142,11 +160,17 @@ KEY_GRID   = "grid"
 KEY_LEVEL  = "level"
 KEY_GROW_BY_FOOD_ONLY = "grow_by_food_only"
 KEY_FOOD_ALWAYS       = "food_always"
+KEY_AI     = "AI"
+KEY_SIZE   = "size"
 
 # for statictics
 KEY_TOTAL_GAMES = "gamecount"
 KEY_HIGH_SCORE  = "highscore"
 KEY_AVG_SCORE   = "avgscore"
+KEY_HIGH_SIZE   = "highsize"
+  
+AI = 'AI'
+HUMAN = 'HUMAN'
 
 def is_ok(ret):
     return ret < ERROR_RET_VAL
@@ -207,3 +231,38 @@ def set_shema_by_name(theme):
     else:
         return False
     return True
+
+
+SIZES = [
+    (16,24),
+    (24,32),
+    (32,48),
+]
+
+SIZE_NAMES = [
+    "Small",
+    "Standard",
+    "Large" 
+]
+
+def set_boars_size(size_level):
+    global ROWS,COLS,WIDTH,HEIGHT
+    global FIELD_BORDER_TOP,FIELD_BORDER_BOTTOM,FIELD_BORDER_LEFT,FIELD_BORDER_RIGHT
+    global HEIGHT_WINDOW,WIDTH_WOINDOW
+
+    r,c = SIZES[size_level] 
+     
+    if r != ROWS or  c != COLS:
+        ROWS= r
+        COLS= c
+
+        WIDTH  = CELL_SIZE * COLS
+        HEIGHT = CELL_SIZE * ROWS
+
+
+        FIELD_BORDER_TOP    = (HEIGHT_WINDOW - HEIGHT)//2
+        FIELD_BORDER_BOTTOM = (HEIGHT_WINDOW - HEIGHT)//2 
+        FIELD_BORDER_LEFT   = (WIDTH_WINDOW - WIDTH)//2
+        FIELD_BORDER_RIGHT  = (WIDTH_WINDOW - WIDTH)//2
+        return True
+    return False

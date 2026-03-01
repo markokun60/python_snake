@@ -10,3 +10,5 @@ pip install pygame-menu-ce
 create folder 
 	data
 
+
+	https://www.youtube.com/watch?v=ymVdjeufD94&list=PLsFyHm8kJsx32EFcsJNt5sDI_nKsanRUu&index=26

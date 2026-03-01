@@ -1,6 +1,10 @@
+from importlib.util import cache_from_source
+from re import A
 import pygame
 import random
+#import sys
 
+ 
 import constants
 
 class SnakeCell:
@@ -124,9 +128,12 @@ class Snake:
         self.mode = constants.MODE_ABOUT
         print("About - mode")
 
-    def start(self):
+    def start(self,is_AI = False):
         self.body.clear()
-        self.mode = constants.MODE_PLAY
+        if is_AI:
+            self.mode = constants.MODE_CMP_PLAY
+        else:
+            self.mode    = constants.MODE_PLAY
         d = 6
         for r in range(0,constants.ROWS):
             for c in range(0,constants.COLS):
@@ -154,11 +161,12 @@ class Snake:
         x = len(self.body) / field_size
         return x
         
-    def get_status(self):
+    def get_status(self,body_size = 0):
         field_size = constants.ROWS * constants.COLS
         field_size -= constants.MAX_ENEMIES
         y = field_size * 0.9
-        x = len(self.body) / y
+        size = len(self.body) if body_size == 0 else body_size
+        x = size  / y
         if x > 1:
             x = 1
         x *= len(constants.SnakeStatus)
@@ -171,7 +179,6 @@ class Snake:
 
         head = self.body[-1]
         return (head.row,head.col)
-
 
     def is_moving(self):
         if self.mode != constants.MODE_PLAY:
@@ -187,6 +194,149 @@ class Snake:
     def get_size(self):
         return len(self.body)
  
+    def distance(self,r,c,cells):
+        x = 1000000
+        for cell in cells:
+            cell_r = cell[0]
+            cell_c = cell[1]
+            dr = abs(r - cell_r)
+            dc = abs(c - cell_c)
+            d = dr + dc
+            if x > d:
+                x = d
+        return x
+
+
+    def _count_moves(self,r0,c0,cells,level = 0):
+        n = 1
+        old_value = cells[r0][c0]
+        cells[r0][c0] = constants.ENEMY_VAL
+        board_size = constants.ROWS * constants.COLS   
+        l = 12
+        if board_size > 600:
+            l = 10
+
+        for (dr,dc) in constants.VELOCITIES:
+            c = c0 + dc
+            r = r0 + dr
+            if r >= 0 and r < constants.ROWS and c >= 0 and c < constants.COLS:
+                if cells[r][c] == constants.EMPTY_VAL or cells[r][c] == constants.FOOD_VAL:
+                    if level == 700:
+                        n += 1
+                    else:
+                        n += self._count_moves(r,c,cells,level+1)  
+        if level < l:
+            cells[r0][c0] = old_value
+        return n
+
+    def copy_field(self):
+        cells =[[0 for x in range(constants.COLS)] for y in range(constants.ROWS)]
+        for r in range(constants.ROWS):
+            for c in range(constants.COLS):
+                cells[r][c] = self.fields[r][c]
+        return cells
+
+    def count_moves(self,r0,c0):
+        cells = self.copy_field()
+        n = self._count_moves(r0,c0,cells)
+        return n;
+
+    def count_closed(self,r0,c0):
+        n = 0
+        for (vr,vc) in constants.VELOCITIES:
+            r = r0 + vr
+            c = c0 + vc
+            if r >= 0 and r < constants.ROWS and c >= 0 and c < constants.COLS:
+                if self.fields[r][c] == constants.EMPTY_VAL or self.fields[r][c] == constants.FOOD_VAL:
+                    n += 1
+        return n;
+
+    def get_path_size(self,r0,c0,vel_r,vel_c):
+        n = 0
+        r = r0 + vel_r
+        c = c0 + vel_c
+        while r >= 0 and r < constants.ROWS and c >= 0 and c < constants.COLS:
+            if self.fields[r][c] == constants.EMPTY_VAL or self.fields[r][c] == constants.FOOD_VAL:
+                if self.count_closed(r,c) <= 2:
+                    break
+                n += 1
+                #f n == max_path: 
+                #    break
+                r += vel_r
+                c += vel_c
+            else:
+                break
+        return n
+
+    def get_items(self,value):
+        items = []
+        for r in range(constants.ROWS):
+            for c in range(constants.COLS):
+                if self.fields[r][c] == value:
+                    items.append((r,c))
+        return items
+
+    def ai_move(self):
+        #print(sys.getrecursionlimit())
+        (rm,cm) = self.get_head()
+        r_best = 0
+        c_best = 0
+        f_best = 0
+        foods  = self.get_items(constants.FOOD_VAL)
+
+        n_to_folow_food = 2
+
+        for (r_vel,c_vel) in constants.VELOCITIES:
+            r = rm + r_vel
+            c = cm + c_vel
+            if r >= 0 and r < constants.ROWS and c >= 0 and c < constants.COLS:
+                is_food = False
+                if self.fields[r][c] == constants.FOOD_VAL:
+                    is_food = True
+                elif self.fields[r][c] != constants.EMPTY_VAL:
+                    continue
+                
+                if is_food:
+                    f_food = 0
+                else:
+                    f_food  = 0 #self.distance(r,c,foods)
+                           
+                f_bad_cells = 0
+                if r == 0 or r == constants.ROWS-1 or c == 0 or c == constants.COLS-1:
+                    f_bad_cells = 3500
+                elif r == 1 or r == constants.ROWS-2 or c == 1 or c == constants.COLS-2:
+                    f_bad_cells = 2000
+                elif r == 2 or r == constants.ROWS-3 or c == 2 or c == constants.COLS-3:
+                    f_bad_cells = 500
+
+                p_size = self.get_size()
+                if p_size > n_to_folow_food:
+                    f_moves = 0#self.count_moves(r,c)
+                    f_path  = self.get_path_size(r,c,r_vel,c_vel)
+                    p_size /= 50
+                else:
+                    f_moves = 0
+                    f_path  = 0
+                    p_size  = 0
+                    
+                #f = -60 * f_food + (4 + p_size) * f_path + f_moves * 16 - 3 * f_bad_cells
+                f  = -f_food + (1 + p_size) * f_path + f_moves  -  f_bad_cells
+                
+                print(f"food = {f_food},p_size={p_size}, f_path={f_path}, moves={f_moves},f_bad_cells={f_bad_cells}, best={f_best}")
+                if r_best == 0 and c_best == 0:
+                    r_best = r_vel
+                    c_best = c_vel
+                    f_best = f
+                elif f_best < f:
+                    r_best = r_vel
+                    c_best = c_vel
+                    f_best = f
+        
+        if c_best != 0 or r_best != 0:
+            self.x_velocity = c_best
+            self.y_velocity = r_best
+        
+
     def grow(self):
         if self.x_velocity == 0 and self.y_velocity == 0:
             print('No velocity')
@@ -200,7 +350,7 @@ class Snake:
         else:
             (r,c) = self.get_head()
             if self.fields[r][c] != constants.SNAKE_VAL:
-                print(f"Invslid data for head {r,c}")
+                print(f"Invalid data for head {r,c}")
                 ret =  constants.ERROR_RET_VAL
             else: 
                 c += self.x_velocity
