@@ -36,9 +36,13 @@ def close_menu_settings():
     set_board_size()
 
 game  = Game(big_text_font,info_text_font)
+
 pygame.display.set_icon(game.SNAKE_IMAGE)
 pygame.display.set_caption(constants.APP_NAME)
 constants.set_boars_size(game.board_size)
+game.load_images()
+
+
 field_rect = pygame.Rect(constants.FIELD_BORDER_LEFT,constants.FIELD_BORDER_TOP,constants.WIDTH,constants.HEIGHT)
 ms =  menu_settings.MenuSettings(game)
 mainSettings = ms.create(close_menu_settings)
@@ -65,6 +69,7 @@ def set_board_size():
     global field_rect
     if constants.set_boars_size(game.board_size):
         field_rect = pygame.Rect(constants.FIELD_BORDER_LEFT,constants.FIELD_BORDER_TOP,constants.WIDTH,constants.HEIGHT)
+        game.load_images()
 
 def exit_game():
     game.snake.mode = constants.MODE_EXIT

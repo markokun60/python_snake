@@ -1,13 +1,14 @@
-from importlib.util import cache_from_source
-from re import A
+
+from tkinter import W
 import pygame
 import random
-#import sys
+import os
 
  
 import constants
 
 class SnakeCell:
+    snake = None
     def __init__(self,row,col,x_velocity,y_velocity,prev = None):
         self.row = row
         self.col = col
@@ -26,47 +27,67 @@ class SnakeCell:
     
         self.x = constants.col_to_x(self.col )
         self.y = constants.row_to_y(self.row )
-        
+
+     
+    def draw_tong(self,window):
+     
+        h = self.snake.tong_size    
+
+        x =  self.x + constants.CELL_SIZE2
+        y =  self.y + constants.CELL_SIZE2
+        color_tong = constants.SNAKE_TONG_COLOR
+        if self.velocity == 'U': 
+            y = self.y
+            points0 = [(x,y),(x-h,y-h)]
+            points1 = [(x,y),(x+h,y-h)]
+            pygame.draw.lines(window,color_tong,False,points0,1)
+            pygame.draw.lines(window,color_tong,False,points1,1)
+        elif self.velocity == 'D':
+            y = self.y + constants.CELL_SIZE
+            points0 = [(x,y),(x-h,y+h)]
+            points1 = [(x,y),(x+h,y+h)]
+            pygame.draw.lines(window,color_tong,False,points0,1)
+            pygame.draw.lines(window,color_tong,False,points1,1)
+        elif self.velocity == 'R':
+            x = self.x + constants.CELL_SIZE
+            points0 = [(x,y),(x+h,y+h)]
+            points1 = [(x,y),(x+h,y-h)]
+            pygame.draw.lines(window,color_tong,False,points0,1)
+            pygame.draw.lines(window,color_tong,False,points1,1)
+        elif self.velocity == 'L':
+            x = self.x 
+            points0 = [(x,y),(x-h,y-h)]
+            points1 = [(x,y),(x-h,y+h)]
+            pygame.draw.lines(window,color_tong,False,points0,1)
+            pygame.draw.lines(window,color_tong,False,points1,1)
+
+    def draw_head(self,window):
+        color = constants.SNAKE_HEAD_COLOR
+        x =  self.x + constants.CELL_SIZE2
+        y =  self.y + constants.CELL_SIZE2     
+        h  = int(constants.CELL_SIZE2) 
+        h2 = int(h/2) 
+        pygame.draw.circle(window,color,(x,y),constants.CELL_SIZE/2)
+        if self.velocity == 'U': 
+           pygame.draw.rect(window,color,(x-h2,y,h,h))
+        elif self.velocity == 'D': 
+           pygame.draw.rect(window,color,(x-h2,y-h,h,h))
+        elif self.velocity == 'R':
+            pygame.draw.rect(window,color,(x-h,y-h2,constants.CELL_SIZE2  ,h))
+        elif self.velocity == 'L':
+            pygame.draw.rect(window,color,(x,y-h2,constants.CELL_SIZE  ,h))
 
     def draw(self,window):
         h  = int(constants.CELL_SIZE2) 
-        h2 = int(h/2)
+        h2 = int(h/2) 
         xLeft = self.x
         yTop  = self.y
       
         x =  xLeft + constants.CELL_SIZE2
         y =  yTop  + constants.CELL_SIZE2
-        if self.next == None:
-            color = constants.SNAKE_HEAD_COLOR
-          
-            pygame.draw.circle(window,color,(x,y),constants.CELL_SIZE/2)
-            #pygame.draw.circle(window,(255,255,255),(x,y),2)
-            
-            color_tong = constants.SNAKE_TONG_COLOR
-            if self.velocity == 'U': 
-                y = self.y
-                points0 = [(x,y),(x-h,y-h)]
-                points1 = [(x,y),(x+h,y-h)]
-                pygame.draw.lines(window,color_tong,False,points0,1)
-                pygame.draw.lines(window,color_tong,False,points1,1)
-            elif self.velocity == 'D':
-                y = self.y + constants.CELL_SIZE
-                points0 = [(x,y),(x-h,y+h)]
-                points1 = [(x,y),(x+h,y+h)]
-                pygame.draw.lines(window,color_tong,False,points0,1)
-                pygame.draw.lines(window,color_tong,False,points1,1)
-            elif self.velocity == 'R':
-                x = self.x + constants.CELL_SIZE
-                points0 = [(x,y),(x+h,y+h)]
-                points1 = [(x,y),(x+h,y-h)]
-                pygame.draw.lines(window,color_tong,False,points0,1)
-                pygame.draw.lines(window,color_tong,False,points1,1)
-            elif self.velocity == 'L':
-                x = self.x 
-                points0 = [(x,y),(x-h,y-h)]
-                points1 = [(x,y),(x-h,y+h)]
-                pygame.draw.lines(window,color_tong,False,points0,1)
-                pygame.draw.lines(window,color_tong,False,points1,1)
+        if self.next == None: 
+            self.draw_head(window) 
+            self.draw_tong(window)
             return
         color = constants.SNAKE_BODY_COLOR
    
@@ -119,10 +140,33 @@ class Snake:
     message    = ""
     is_paused  = False
 
+
     mode = constants.MODE_WELCOME
 
+     
     def __init__(self,f):
         self.fields = f
+        #self.images = self.import_images()
+        SnakeCell.snake = self
+        self.tong_size = constants.CELL_SIZE2 ;
+        self.tong_velociity = 1
+
+    def import_images_not_use(self):
+        surf_dict = {}
+        for folder_path, _, image_names in os.walk(os.path.join(constants.ASSET_FOLDER,  'snake')):
+            for image_name in image_names:
+                full_path = os.path.join(folder_path, image_name)
+                surface = pygame.image.load(full_path).convert_alpha()
+
+                surf_dict[image_name.split('.')[0]] = surface
+        return surf_dict 
+
+    def update_tong_size(self):
+        self.tong_size += self.tong_velociity
+        if  self.tong_size >= constants.CELL_SIZE2 :
+            self.tong_velociity = -1
+        elif  self.tong_size < 2:
+            self.tong_velociity = 1
 
     def set_about_mode(self):
         self.mode = constants.MODE_ABOUT
@@ -353,6 +397,7 @@ class Snake:
                 print(f"Invalid data for head {r,c}")
                 ret =  constants.ERROR_RET_VAL
             else: 
+
                 c += self.x_velocity
                 r += self.y_velocity
 
@@ -385,6 +430,8 @@ class Snake:
             self.mode = constants.MODE_AGONY
             if ret ==  constants.ERROR_RET_VAL:
                 self.message = "Fatal application error"
+        else:
+            self.update_tong_size()
         return ret
 
     def move(self):

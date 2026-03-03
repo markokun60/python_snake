@@ -25,6 +25,7 @@
     <Compile Include="animatedSprite.py" />
     <Compile Include="button.py" />
     <Compile Include="constants.py" />
+    <Compile Include="item.py" />
     <Compile Include="game.py" />
     <Compile Include="lib.py" />
     <Compile Include="main.py" />

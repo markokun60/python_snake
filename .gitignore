@@ -221,4 +221,7 @@ __marimo__/
 *.bat
 *.lnk
 snake  py
+doc/
+assets/not_used/
+
 

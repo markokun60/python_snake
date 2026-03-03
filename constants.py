@@ -32,6 +32,7 @@ SNAKE_BODY_COLOR = GREEN
 SNAKE_HEAD_COLOR = GREEN_DARK
 SNAKE_TONG_COLOR = RED
 GRID_COLOR       = BK
+FIELD_BORDER     = ORANGE    
 
 
 VELOCITIES = [(-1,0),(1,0),(0,-1),(1,0)]
@@ -53,17 +54,16 @@ BODY_RET_VAL  :Final[int] = ERROR_RET_VAL + 2
 EMENY_RET_VAL :Final[int] = ERROR_RET_VAL + 3
 
 #geometric vaalues
-CELL_SIZE:Final[int] = 16
-CELL_SIZE2           = CELL_SIZE/2
+CELL_SIZE   = 16
+CELL_SIZE2  = CELL_SIZE/2
 
 MAX_ROWS:Final[int] = 32
 MAX_COLS:Final[int] = 48
 
 MAX_FIELD_BORDER_TOP    :Final[int]= 32
-MAX_FIELD_BORDER_BOTTOM :Final[int]= 20
+MAX_FIELD_BORDER_BOTTOM :Final[int]= 24
 MAX_FIELD_BORDER_LEFT   :Final[int]= 20
 MAX_FIELD_BORDER_RIGHT  :Final[int]= 20
-
 
 WIDTH_WINDOW  = CELL_SIZE * MAX_COLS + MAX_FIELD_BORDER_LEFT + MAX_FIELD_BORDER_RIGHT
 HEIGHT_WINDOW = CELL_SIZE * MAX_ROWS + MAX_FIELD_BORDER_TOP  + MAX_FIELD_BORDER_BOTTOM
@@ -235,7 +235,7 @@ def set_shema_by_name(theme):
 
 SIZES = [
     (16,24),
-    (24,32),
+    (24,34),
     (32,48),
 ]
 
@@ -249,20 +249,31 @@ def set_boars_size(size_level):
     global ROWS,COLS,WIDTH,HEIGHT
     global FIELD_BORDER_TOP,FIELD_BORDER_BOTTOM,FIELD_BORDER_LEFT,FIELD_BORDER_RIGHT
     global HEIGHT_WINDOW,WIDTH_WOINDOW
+    global CELL_SIZE,CELL_SIZE2
 
     r,c = SIZES[size_level] 
      
     if r != ROWS or  c != COLS:
-        ROWS= r
-        COLS= c
+        if r == 16:
+            CELL_SIZE = 32
+        elif r == 24:
+            CELL_SIZE = 22
+        else:
+            CELL_SIZE = 16
 
-        WIDTH  = CELL_SIZE * COLS
+        CELL_SIZE2  = CELL_SIZE/2
+
+        ROWS = r
+        COLS = c
+
+        WIDTH  = CELL_SIZE * COLS 
         HEIGHT = CELL_SIZE * ROWS
 
+        #print(WIDTH,HEIGHT, WIDTH_WINDOW,HEIGHT_WINDOW)
 
         FIELD_BORDER_TOP    = (HEIGHT_WINDOW - HEIGHT)//2
         FIELD_BORDER_BOTTOM = (HEIGHT_WINDOW - HEIGHT)//2 
-        FIELD_BORDER_LEFT   = (WIDTH_WINDOW - WIDTH)//2
-        FIELD_BORDER_RIGHT  = (WIDTH_WINDOW - WIDTH)//2
+        FIELD_BORDER_LEFT   = (WIDTH_WINDOW  - WIDTH)//2
+        FIELD_BORDER_RIGHT  = (WIDTH_WINDOW  - WIDTH)//2
         return True
     return False

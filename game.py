@@ -10,7 +10,8 @@ import configparser
 import constants
 import lib
 from  snake import Snake
-from  animatedSprite import AnimatedSprite
+from  animatedSprite import Grave,Enemy
+from  item import Item
 
 def draw_text(window,source,fnt ,other_height = 0):
     text = fnt.render(source,1,constants.TEXT_COLOR ) 
@@ -102,17 +103,15 @@ class Game:
 
         self.big_text_font = big_text_font
         self.info_text_font= info_text_font
+        
         self.field = [[0 for x in range(constants.COLS)] for y in range(constants.ROWS)]
+        self.items = {}
+
         self.snake = Snake(self.field)
-        self.grave = AnimatedSprite()
+        self.grave = Grave()
 
-        self.FOOD_IMAGE  = pygame.image.load(os.path.join(constants.ASSET_FOLDER,'food.png'))
-        self.ENEMY_IMAGE = pygame.image.load(os.path.join(constants.ASSET_FOLDER,'enemy.png'))
-        self.SNAKE_IMAGE = pygame.image.load(os.path.join(constants.ASSET_FOLDER,'snake.png'))
-
-        self.FOOD_IMAGE  = pygame.transform.scale(self.FOOD_IMAGE,(constants.CELL_SIZE,constants.CELL_SIZE))
-        self.ENEMY_IMAGE = pygame.transform.scale(self.ENEMY_IMAGE,(constants.CELL_SIZE,constants.CELL_SIZE))
-
+        #self.load_images()
+        self.SNAKE_IMAGE = pygame.image.load(os.path.join(constants.ASSET_FOLDER,'snake.png')).convert_alpha()
         self.WALL_SOUND  = pygame.mixer.Sound(os.path.join(constants.SOUND_FOLDER,'wall.mp3'))
         self.FOOD_SOUND  = pygame.mixer.Sound(os.path.join(constants.SOUND_FOLDER,'eat.mp3'))
 
@@ -134,15 +133,33 @@ class Game:
         #
         self.player_code = constants.HUMAN
        
+     
 
         self.load_statistics()
                   
         #print(f"high score {self.highscore}")
 
+    def load_images(self):
+        self.FOOD_IMAGE  = pygame.image.load(os.path.join(constants.ASSET_FOLDER,'food.png')).convert_alpha()
+        self.ENEMY_IMAGE = pygame.image.load(os.path.join(constants.ASSET_FOLDER,'enemy.png')).convert_alpha()
+
+
+        self.FOOD_IMAGE  = pygame.transform.scale(self.FOOD_IMAGE,(constants.CELL_SIZE,constants.CELL_SIZE))
+        self.ENEMY_IMAGE = pygame.transform.scale(self.ENEMY_IMAGE,(constants.CELL_SIZE,constants.CELL_SIZE))
+
+        self.enemy_images = []
+        for i in range(0,4):
+            img_path = os.path.join(constants.ASSET_FOLDER,'enemy',f'{i}.png')
+            image = pygame.image.load(img_path).convert_alpha()
+            #image.set_colorkey((163, 73, 164))
+            image = pygame.transform.scale(image,(constants.CELL_SIZE,constants.CELL_SIZE))
+            self.enemy_images.append(image)
+
     def set_board_size(self,i):
         self.board_size = i
         self.summary = self.summaryValues[self.board_size]
        
+
 
     def start(self):
         self.player_code = constants.AI if self.is_AI else constants.HUMAN
@@ -152,12 +169,14 @@ class Game:
         self.pause_started = None
         self.summary.total_games[self.player_code] += 1
         self.status = 0
+        self.items.clear()
         self.commands.clear()
         self.snake.start()
         if self.is_food_always:
             self.create_food()
 
         self.set_prompt("Game started")
+        #self.create_enemy()
 
     def pause_resume(self):
         self.snake.is_paused = not self.snake.is_paused
@@ -216,6 +235,9 @@ class Game:
             
 
         if res == constants.FOOD_RET_VAL:
+            (r,c) = self.snake.get_head()
+            i = r *constants.COLS + c
+            del(self.items[i])
             self.food_step = 10
             self.total_foods -= 1
             if self.is_sound:
@@ -287,6 +309,7 @@ class Game:
                     cells.append((r,c))
         return cells
 
+
     def create_item(self,val):
         cells = self.get_free_cells()
         n = len(cells)
@@ -295,6 +318,12 @@ class Game:
         n = random.randint(0,n-1)
         (r,c) = cells[n]
         self.field[r][c] = val
+
+        i = r *constants.COLS + c
+        if val == constants.FOOD_VAL:
+            self.items[i] = Item(self.FOOD_IMAGE, r,c)
+        elif val == constants.ENEMY_VAL:
+            self.items[i] = Enemy(self.enemy_images, r,c)
         return True
                     
 
@@ -377,19 +406,26 @@ class Game:
         self.draw_progress(window)
         if self.is_grid :
             draw_grid(window)
+
         for r in range(0,constants.ROWS): 
-            y = y = constants.row_to_y(r)
+            y = constants.row_to_y(r)
             for c in range(0,constants.COLS):
                 val = self.field[r][c]
                 if val == constants.EMPTY_VAL:
                     continue
-                x = constants.col_to_x(c)
-                if val == constants.FOOD_VAL:
-                    window.blit(self.FOOD_IMAGE,(x,y))
-                elif val == constants.ENEMY_VAL:
-                    window.blit(self.ENEMY_IMAGE,(x,y))
-        self.snake.draw(window)
+                elif val in (constants.FOOD_VAL,constants.ENEMY_VAL):  
+                    x = constants.col_to_x(c)
+                    i = r *constants.COLS + c
+                    self.items[i].draw(window)
+                #if val == constants.FOOD_VAL:
+                #    #window.blit(self.FOOD_IMAGE,(x,y))
+                #   
+                #    self.item[i].draw(window)
+                #elif val == constants.ENEMY_VAL:
+                #    window.blit(self.ENEMY_IMAGE,(x,y))
         
+        self.snake.draw(window)
+        pygame.draw.rect(window,constants.FIELD_BORDER,(constants.FIELD_BORDER_LEFT-1,constants.FIELD_BORDER_TOP-1,constants.WIDTH+2,constants.HEIGHT+2),2) 
        
         #window.blit(text,(x,y))
 
@@ -591,7 +627,7 @@ To start new game press - space
             self.theme = theme
 
         self.level      = config.getint    (section, constants.KEY_LEVEL , fallback=self.level)
-        #self.board_size = config.getint    (section, constants.KEY_SIZE  , fallback=self.board_size)
+        self.board_size = config.getint    (section, constants.KEY_SIZE  , fallback=self.board_size)
 
         section = constants.SECTION_RULES
         self.is_grow_by_food_only = config.getboolean(section, constants.KEY_GROW_BY_FOOD_ONLY , fallback=self.is_grow_by_food_only )
