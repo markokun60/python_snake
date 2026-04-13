@@ -1,0 +1,5 @@
+In this mode AI will learn
+how to play snake
+
+Press SPACE or button "Start" 
+to start training

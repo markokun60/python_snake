@@ -1,0 +1,9 @@
+To move the snake you can use
+
+To turn
+  z - anticlockwise
+  x - clockwise
+To move  - use arrow keys
+To pause/resume - space
+
+To start new game press - space

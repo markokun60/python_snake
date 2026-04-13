@@ -220,8 +220,14 @@ __marimo__/
 #Windows
 *.bat
 *.lnk
+*.zip
+*.proj
+*.pyproj
+*.command
+
 snake  py
 doc/
+references/
 assets/not_used/
 
 

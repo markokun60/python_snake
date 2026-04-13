@@ -1,136 +1,9 @@
-
-from tkinter import W
 import pygame
 import random
 import os
 
- 
 import constants
-
-class SnakeCell:
-    snake = None
-    def __init__(self,row,col,x_velocity,y_velocity,prev = None):
-        self.row = row
-        self.col = col
-        if x_velocity < 0:
-            self.velocity = 'L'
-        elif x_velocity > 0:
-            self.velocity = 'R'
-        elif y_velocity < 0:
-            self.velocity = 'U'
-        elif y_velocity > 0:
-            self.velocity = 'D'
-    
-        self.next = None
-        if prev != None:
-            prev.next = self
-    
-        self.x = constants.col_to_x(self.col )
-        self.y = constants.row_to_y(self.row )
-
-     
-    def draw_tong(self,window):
-     
-        h = self.snake.tong_size    
-
-        x =  self.x + constants.CELL_SIZE2
-        y =  self.y + constants.CELL_SIZE2
-        color_tong = constants.SNAKE_TONG_COLOR
-        if self.velocity == 'U': 
-            y = self.y
-            points0 = [(x,y),(x-h,y-h)]
-            points1 = [(x,y),(x+h,y-h)]
-            pygame.draw.lines(window,color_tong,False,points0,1)
-            pygame.draw.lines(window,color_tong,False,points1,1)
-        elif self.velocity == 'D':
-            y = self.y + constants.CELL_SIZE
-            points0 = [(x,y),(x-h,y+h)]
-            points1 = [(x,y),(x+h,y+h)]
-            pygame.draw.lines(window,color_tong,False,points0,1)
-            pygame.draw.lines(window,color_tong,False,points1,1)
-        elif self.velocity == 'R':
-            x = self.x + constants.CELL_SIZE
-            points0 = [(x,y),(x+h,y+h)]
-            points1 = [(x,y),(x+h,y-h)]
-            pygame.draw.lines(window,color_tong,False,points0,1)
-            pygame.draw.lines(window,color_tong,False,points1,1)
-        elif self.velocity == 'L':
-            x = self.x 
-            points0 = [(x,y),(x-h,y-h)]
-            points1 = [(x,y),(x-h,y+h)]
-            pygame.draw.lines(window,color_tong,False,points0,1)
-            pygame.draw.lines(window,color_tong,False,points1,1)
-
-    def draw_head(self,window):
-        color = constants.SNAKE_HEAD_COLOR
-        x =  self.x + constants.CELL_SIZE2
-        y =  self.y + constants.CELL_SIZE2     
-        h  = int(constants.CELL_SIZE2) 
-        h2 = int(h/2) 
-        pygame.draw.circle(window,color,(x,y),constants.CELL_SIZE/2)
-        if self.velocity == 'U': 
-           pygame.draw.rect(window,color,(x-h2,y,h,h))
-        elif self.velocity == 'D': 
-           pygame.draw.rect(window,color,(x-h2,y-h,h,h))
-        elif self.velocity == 'R':
-            pygame.draw.rect(window,color,(x-h,y-h2,constants.CELL_SIZE2  ,h))
-        elif self.velocity == 'L':
-            pygame.draw.rect(window,color,(x,y-h2,constants.CELL_SIZE  ,h))
-
-    def draw(self,window):
-        h  = int(constants.CELL_SIZE2) 
-        h2 = int(h/2) 
-        xLeft = self.x
-        yTop  = self.y
-      
-        x =  xLeft + constants.CELL_SIZE2
-        y =  yTop  + constants.CELL_SIZE2
-        if self.next == None: 
-            self.draw_head(window) 
-            self.draw_tong(window)
-            return
-        color = constants.SNAKE_BODY_COLOR
-   
-        if self.next.velocity == self.velocity and (self.velocity == 'R' or self.velocity == 'L'):
-            pygame.draw.rect(window,color,(xLeft,y-h2,constants.CELL_SIZE,h))
-
-        elif self.next.velocity == self.velocity and (self.velocity == 'U' or self.velocity == 'D'): 
-            pygame.draw.rect(window,color,(x-h2,yTop,h,constants.CELL_SIZE))
-
-        elif self.velocity == 'R' and self.next.velocity == 'U':
-            pygame.draw.rect(window,color,(xLeft,y-h2,constants.CELL_SIZE2+h2,constants.CELL_SIZE2))
-            pygame.draw.rect(window,color,(x-h2,yTop,h,constants.CELL_SIZE2+h2))
-
-        elif self.velocity == 'R' and self.next.velocity == 'D':
-            pygame.draw.rect(window,color,(xLeft,y-h2,constants.CELL_SIZE2+h2,constants.CELL_SIZE2))
-            pygame.draw.rect(window,color,(x-h2,y,h,constants.CELL_SIZE2))
-
-        elif self.velocity == 'L' and self.next.velocity == 'U':
-            pygame.draw.rect(window,color,(x,y-h2,constants.CELL_SIZE2+h2,constants.CELL_SIZE2))
-            pygame.draw.rect(window,color,(x-h2,yTop,h,constants.CELL_SIZE2+h2))
-
-        elif self.velocity == 'L' and self.next.velocity == 'D':
-            pygame.draw.rect(window,color,(x-h2,y-h2,constants.CELL_SIZE2+h2,constants.CELL_SIZE2))
-            pygame.draw.rect(window,color,(x-h2,y,h,constants.CELL_SIZE2))
-
-        elif self.velocity == 'D' and self.next.velocity == 'L':
-            pygame.draw.rect(window,color,(x-h2,yTop,h,constants.CELL_SIZE2))
-            pygame.draw.rect(window,color,(xLeft,y-h2,constants.CELL_SIZE2+h2,constants.CELL_SIZE2))
-
-        elif self.velocity == 'D' and self.next.velocity == 'R':
-            pygame.draw.rect(window,color,(x-h2,yTop,h,constants.CELL_SIZE2))
-            pygame.draw.rect(window,color,(x-h2,y-h2,constants.CELL_SIZE2+h2,constants.CELL_SIZE2))
-
-        elif self.velocity == 'U' and self.next.velocity == 'L':
-            pygame.draw.rect(window,color,(x-h2,y-h2,constants.CELL_SIZE2,constants.CELL_SIZE2 + h2))
-            pygame.draw.rect(window,color,(xLeft,y-h2,constants.CELL_SIZE2,constants.CELL_SIZE2))
-
-        elif self.velocity == 'U' and self.next.velocity == 'R':
-            pygame.draw.rect(window,color,(x-h2,y-h2,constants.CELL_SIZE2,constants.CELL_SIZE2+h2))
-            pygame.draw.rect(window,color,(x-h2,y-h2,constants.CELL_SIZE2+h2,constants.CELL_SIZE2))
-
-        #else:
-        #    pygame.draw.rect(window,color,(self.x,self.y,constants.CELL_SIZE,constants.CELL_SIZE))
+from   snake_cell import SnakeCell
 
 class Snake:
     body = []
@@ -139,17 +12,19 @@ class Snake:
     y_velocity = 0
     message    = ""
     is_paused  = False
-
+    is_report  = True
+    is_draw    = True
 
     mode = constants.MODE_WELCOME
 
-     
     def __init__(self,f):
         self.fields = f
         #self.images = self.import_images()
         SnakeCell.snake = self
         self.tong_size = constants.CELL_SIZE2 ;
         self.tong_velociity = 1
+        self.rows = constants.ROWS
+        self.cols = constants.COLS 
 
     def import_images_not_use(self):
         surf_dict = {}
@@ -161,7 +36,7 @@ class Snake:
                 surf_dict[image_name.split('.')[0]] = surface
         return surf_dict 
 
-    def update_tong_size(self):
+    def _update_tong_size(self):
         self.tong_size += self.tong_velociity
         if  self.tong_size >= constants.CELL_SIZE2 :
             self.tong_velociity = -1
@@ -170,21 +45,36 @@ class Snake:
 
     def set_about_mode(self):
         self.mode = constants.MODE_ABOUT
-        print("About - mode")
+        if self.is_report:
+            print("About - mode")
 
-    def start(self,is_AI = False):
+    def start(self,is_AI):
+        self.rows = constants.ROWS
+        self.cols = constants.COLS
+
         self.body.clear()
         if is_AI:
             self.mode = constants.MODE_CMP_PLAY
+            self.is_draw = False
         else:
             self.mode    = constants.MODE_PLAY
-        d = 6
-        for r in range(0,constants.ROWS):
-            for c in range(0,constants.COLS):
+            self.is_draw = True
+
+        self.grow_by_food_size = round(self.rows * self.cols * 0.03)    
+        if self.is_report:
+            print(f'food give you grow by {self.grow_by_food_size} cells')
+ 
+        for r in range(0,self.rows):
+            for c in range(0,self.cols):
                 self.fields[r][c] = constants.EMPTY_VAL
 
-        c = random.randint(d,constants.COLS-d)
-        r = random.randint(d,constants.ROWS-d)
+        d = 6
+        c = random.randint(d,self.cols - d)
+        r = random.randint(d,self.rows - d)
+        
+
+        #c = self.cols // 2
+        #r = self.rows // 2
        
         self.fields[r][c] = constants.SNAKE_VAL
 
@@ -193,20 +83,21 @@ class Snake:
         self.y_velocity = 0
         cell = SnakeCell(r,c,self.x_velocity,self.y_velocity)
         self.body.append(cell)
-        print(f"Started: {r,c} {self.x_velocity,self.y_velocity}")
+        if self.is_report:
+            print(f"Started: {r,c} {self.x_velocity,self.y_velocity}")
 
         self.x_velocity = 0
         self.y_velocity = -1
         self.grow()
      
     def get_progress(self):
-        field_size = constants.ROWS * constants.COLS
+        field_size = self.rows  * self.cols
         field_size -= constants.MAX_ENEMIES
         x = len(self.body) / field_size
         return x
         
     def get_status(self,body_size = 0):
-        field_size = constants.ROWS * constants.COLS
+        field_size = self.rows * self.cols
         field_size -= constants.MAX_ENEMIES
         y = field_size * 0.9
         size = len(self.body) if body_size == 0 else body_size
@@ -225,7 +116,7 @@ class Snake:
         return (head.row,head.col)
 
     def is_moving(self):
-        if self.mode != constants.MODE_PLAY:
+        if not self.mode in (constants.MODE_PLAY,constants.MODE_CMP_PLAY) :
             return False
         elif self.is_paused:
             return False
@@ -237,150 +128,16 @@ class Snake:
     
     def get_size(self):
         return len(self.body)
- 
-    def distance(self,r,c,cells):
-        x = 1000000
-        for cell in cells:
-            cell_r = cell[0]
-            cell_c = cell[1]
-            dr = abs(r - cell_r)
-            dc = abs(c - cell_c)
-            d = dr + dc
-            if x > d:
-                x = d
-        return x
 
-
-    def _count_moves(self,r0,c0,cells,level = 0):
-        n = 1
-        old_value = cells[r0][c0]
-        cells[r0][c0] = constants.ENEMY_VAL
-        board_size = constants.ROWS * constants.COLS   
-        l = 12
-        if board_size > 600:
-            l = 10
-
-        for (dr,dc) in constants.VELOCITIES:
-            c = c0 + dc
-            r = r0 + dr
-            if r >= 0 and r < constants.ROWS and c >= 0 and c < constants.COLS:
-                if cells[r][c] == constants.EMPTY_VAL or cells[r][c] == constants.FOOD_VAL:
-                    if level == 700:
-                        n += 1
-                    else:
-                        n += self._count_moves(r,c,cells,level+1)  
-        if level < l:
-            cells[r0][c0] = old_value
-        return n
-
-    def copy_field(self):
-        cells =[[0 for x in range(constants.COLS)] for y in range(constants.ROWS)]
-        for r in range(constants.ROWS):
-            for c in range(constants.COLS):
-                cells[r][c] = self.fields[r][c]
-        return cells
-
-    def count_moves(self,r0,c0):
-        cells = self.copy_field()
-        n = self._count_moves(r0,c0,cells)
-        return n;
-
-    def count_closed(self,r0,c0):
-        n = 0
-        for (vr,vc) in constants.VELOCITIES:
-            r = r0 + vr
-            c = c0 + vc
-            if r >= 0 and r < constants.ROWS and c >= 0 and c < constants.COLS:
-                if self.fields[r][c] == constants.EMPTY_VAL or self.fields[r][c] == constants.FOOD_VAL:
-                    n += 1
-        return n;
-
-    def get_path_size(self,r0,c0,vel_r,vel_c):
-        n = 0
-        r = r0 + vel_r
-        c = c0 + vel_c
-        while r >= 0 and r < constants.ROWS and c >= 0 and c < constants.COLS:
-            if self.fields[r][c] == constants.EMPTY_VAL or self.fields[r][c] == constants.FOOD_VAL:
-                if self.count_closed(r,c) <= 2:
-                    break
-                n += 1
-                #f n == max_path: 
-                #    break
-                r += vel_r
-                c += vel_c
-            else:
-                break
-        return n
-
-    def get_items(self,value):
+    def get_items(self,value:int):
         items = []
-        for r in range(constants.ROWS):
-            for c in range(constants.COLS):
+        for r in range(self.rows):
+            for c in range(self.cols):
                 if self.fields[r][c] == value:
                     items.append((r,c))
         return items
 
-    def ai_move(self):
-        #print(sys.getrecursionlimit())
-        (rm,cm) = self.get_head()
-        r_best = 0
-        c_best = 0
-        f_best = 0
-        foods  = self.get_items(constants.FOOD_VAL)
-
-        n_to_folow_food = 2
-
-        for (r_vel,c_vel) in constants.VELOCITIES:
-            r = rm + r_vel
-            c = cm + c_vel
-            if r >= 0 and r < constants.ROWS and c >= 0 and c < constants.COLS:
-                is_food = False
-                if self.fields[r][c] == constants.FOOD_VAL:
-                    is_food = True
-                elif self.fields[r][c] != constants.EMPTY_VAL:
-                    continue
-                
-                if is_food:
-                    f_food = 0
-                else:
-                    f_food  = 0 #self.distance(r,c,foods)
-                           
-                f_bad_cells = 0
-                if r == 0 or r == constants.ROWS-1 or c == 0 or c == constants.COLS-1:
-                    f_bad_cells = 3500
-                elif r == 1 or r == constants.ROWS-2 or c == 1 or c == constants.COLS-2:
-                    f_bad_cells = 2000
-                elif r == 2 or r == constants.ROWS-3 or c == 2 or c == constants.COLS-3:
-                    f_bad_cells = 500
-
-                p_size = self.get_size()
-                if p_size > n_to_folow_food:
-                    f_moves = 0#self.count_moves(r,c)
-                    f_path  = self.get_path_size(r,c,r_vel,c_vel)
-                    p_size /= 50
-                else:
-                    f_moves = 0
-                    f_path  = 0
-                    p_size  = 0
-                    
-                #f = -60 * f_food + (4 + p_size) * f_path + f_moves * 16 - 3 * f_bad_cells
-                f  = -f_food + (1 + p_size) * f_path + f_moves  -  f_bad_cells
-                
-                print(f"food = {f_food},p_size={p_size}, f_path={f_path}, moves={f_moves},f_bad_cells={f_bad_cells}, best={f_best}")
-                if r_best == 0 and c_best == 0:
-                    r_best = r_vel
-                    c_best = c_vel
-                    f_best = f
-                elif f_best < f:
-                    r_best = r_vel
-                    c_best = c_vel
-                    f_best = f
         
-        if c_best != 0 or r_best != 0:
-            self.x_velocity = c_best
-            self.y_velocity = r_best
-        
-
     def grow(self):
         if self.x_velocity == 0 and self.y_velocity == 0:
             print('No velocity')
@@ -402,18 +159,21 @@ class Snake:
                 r += self.y_velocity
 
                 if r < 0 or r >= constants.ROWS or c < 0 or c >= constants.COLS:
-                    print(f"Border: {r,c}: direction {self.x_velocity,self.y_velocity}")
-                    self.message = "Meet border"
+                    if self.is_report:
+                        print(f"Border: {r,c}: direction {self.x_velocity,self.y_velocity}")
+                        self.message = "Meet border"
                     ret =  constants.BORDER_RET_VAL
 
                 elif self.fields[r][c] == constants.SNAKE_VAL:
-                    print(f"Neet body: {r,c}")
-                    self.message = "Meet body"
+                    if self.is_report:
+                        print(f"Meet body: {r,c}")
+                        self.message = "Meet body"
                     ret = constants.BODY_RET_VAL
 
                 elif self.fields[r][c] == constants.ENEMY_VAL:
-                    print(f"Neet enemy: {r,c}")
-                    self.message = "Meet mongoose"
+                    if self.is_report:
+                        print(f"Meet enemy: {r,c}")
+                        self.message = "Meet mongoose"
                     ret =  constants.EMENY_RET_VAL
         
                 else:
@@ -430,18 +190,158 @@ class Snake:
             self.mode = constants.MODE_AGONY
             if ret ==  constants.ERROR_RET_VAL:
                 self.message = "Fatal application error"
-        else:
-            self.update_tong_size()
+        elif self.is_draw:
+            self._update_tong_size()
         return ret
 
     def move(self):
+        #n = len(self.body)
+        #for i in range(n-1):
+        #    self.body[i+1].copy(self.body[i])
+
         ret = self.grow()
         if ret < constants.ERROR_RET_VAL:
+           
             tail = self.body[0]
             self.body.pop(0)
             self.fields[tail.row][tail.col] = constants.EMPTY_VAL 
         return ret
+    
+    def turn_left(self):
+        x = self.x_velocity
+        y = self.y_velocity
 
-    def draw(self,window):
+        if x < 0 and y == 0: #left
+            return (0,1) #down
+
+        if x == 0 and y > 0: #down
+            return (1,0) #right
+
+        if x > 0 and y == 0: #right
+            return (0,-1) #up
+
+        if x == 0 and y < 0: #up
+            return (-1,0) #right
+
+        return (0,0)
+
+    def turn_right(self):
+        x = self.x_velocity
+        y = self.y_velocity
+
+        if x < 0 and y == 0: #left
+            return (0,-1) #up
+
+        if x == 0 and y < 0: #up
+            return (1,0) #right
+
+        if x > 0 and y == 0: #right
+            return (0,1) #down
+
+        if x == 0 and y > 0: #down
+            return (-1,0) #left
+
+        return (0,0)
+
+    def draw(self,window:pygame.Surface):
+        tail = True
         for cell in self.body:
-            cell.draw(window)
+            cell.draw(window,tail)
+            tail = False
+
+    def is_has(self,r:int,c:int):
+         return r >= 0 and r < self.rows and c >= 0 and c < self.cols
+
+    def get_state(self):
+        (rh,ch) = self.get_head()    
+        foods = self.get_items(constants.FOOD_VAL)
+        dir_l = self.x_velocity < 0
+        dir_r = self.x_velocity > 0
+        dir_u = self.y_velocity < 0
+        dir_d = self.y_velocity > 0
+        
+        #meet_border = []
+        #meet_body   = []
+        #meet_enemy  = []
+        dangers      = []
+        meet_food    = []
+
+        LEFT  = (-1 ,0)
+        RIGHT = (1  ,0)
+        UP    = (0 ,-1)
+        DOWN  = (0 , 1)
+
+        directions = [] # straight, right, left
+        if self.x_velocity > 0: # right
+            directions = [RIGHT,DOWN,UP]
+        elif self.x_velocity < 0: # left
+            directions = [LEFT,UP,DOWN]
+        elif self.y_velocity < 0: # up
+            directions = [UP,RIGHT,LEFT]
+        elif self.y_velocity > 0: # down
+            directions = [DOWN,LEFT,RIGHT]
+        else:
+            print("No directions")    
+
+        for (cm,rm) in  directions:    
+            r = rm + rh
+            c = cm + ch
+            is_border = False
+            is_body   = False
+            is_food   = False
+            is_enemy  = False
+            if r < 0 or r >= self.rows or c < 0 or c >= self.cols:
+                is_border = True
+            elif self.fields[r][c] == constants.SNAKE_VAL:
+                is_body = True  
+            elif self.fields[r][c] == constants.ENEMY_VAL:
+                is_enemy = True          
+            #elif self.fields[r][c] == constants.FOOD_VAL:
+            #    is_food= True
+
+            is_danger = is_border or is_enemy or is_body
+            dangers.append(is_danger)
+            #meet_border.append(is_border)
+            #meet_body.append(is_body)
+            #meet_enemy.append(is_enemy)
+            #meet_food.append(is_food)
+
+        food_l  = False
+        food_r  = False
+        food_d  = False
+        food_u  = False
+
+        for (rf,cf) in foods:
+            if cf < ch:  
+                food_l = True
+            if cf > ch: 
+                food_r = True
+
+            if rf < rh: 
+                food_u = True
+
+            if rf > rh: 
+                food_d = True
+
+        
+        state = [
+            dangers[0],dangers[1],dangers[2],
+            dir_l,dir_r,dir_u,dir_d,
+            food_l,food_r,food_u,food_d
+        ]
+    
+        return state
+
+
+ 
+def distance(r,c,cells):
+    x = 1000000
+    for cell in cells:
+        cell_r = cell[0]
+        cell_c = cell[1]
+        dr = abs(r - cell_r)
+        dc = abs(c - cell_c)
+        d = dr + dc
+        if x > d:
+            x = d
+    return x

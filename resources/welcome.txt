@@ -1,0 +1,13 @@
+You are a snake. The goal of the game is grow, grow and grow.
+To grow you need a food. 
+This won't the problems for you: a lot of tasty apples will be around.
+
+But be caution! 
+The mongooses are need food too and you are their favorite food.
+
+Others very dangerous spots for you are t
+he edges of the field. 
+You can't live without moving.
+The edge stops and kills you.
+
+Press <b>SPACE</b> or button "Start" to play

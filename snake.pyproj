@@ -11,7 +11,7 @@
     <OutputPath>.</OutputPath>
     <Name>snake</Name>
     <RootNamespace>snake</RootNamespace>
-    <InterpreterId>MSBuild|env_games|$(MSBuildProjectFullPath)</InterpreterId>
+    <InterpreterId>MSBuild|.venv|$(MSBuildProjectFullPath)</InterpreterId>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
     <DebugSymbols>true</DebugSymbols>
@@ -22,54 +22,108 @@
     <EnableUnmanagedDebugging>false</EnableUnmanagedDebugging>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="ai\agent.py" />
+    <Compile Include="ai\helper.py" />
+    <Compile Include="ai\model.py" />
+    <Compile Include="ai\__init__.py" />
     <Compile Include="animatedSprite.py" />
-    <Compile Include="button.py" />
     <Compile Include="constants.py" />
+    <Compile Include="controls\button.py" />
+    <Compile Include="controls\checkbox.py" />
+    <Compile Include="controls\checkGroup.py" />
+    <Compile Include="controls\combobox.py" />
+    <Compile Include="controls\controls.py" />
+    <Compile Include="controls\form.py" />
+    <Compile Include="controls\label.py" />
+    <Compile Include="controls\listbox.py" />
+    <Compile Include="controls\slider.py" />
+    <Compile Include="controls\textBox.py" />
+    <Compile Include="controls\__init__.py" />
+    <Compile Include="draw_html.py" />
+    <Compile Include="exit_message.py" />
+    <Compile Include="form_options.py" />
     <Compile Include="item.py" />
     <Compile Include="game.py" />
     <Compile Include="lib.py" />
     <Compile Include="main.py" />
-    <Compile Include="menu_settings.py" />
+    <Compile Include="main_form.py" />
+    <Compile Include="resources\__init__.py" />
     <Compile Include="snake.py" />
+    <Compile Include="snake_ai.py" />
+    <Compile Include="snake_cell.py" />
+    <Compile Include="summary.py" />
   </ItemGroup>
   <ItemGroup>
-    <Interpreter Include="..\env_games\">
-      <Id>env_games</Id>
+    <Folder Include="ai\" />
+    <Folder Include="ai\__pycache__\" />
+    <Folder Include="assets\" />
+    <Folder Include="assets\enemy\" />
+    <Folder Include="assets\grave\" />
+    <Folder Include="assets\sounds\" />
+    <Folder Include="controls\" />
+    <Folder Include="controls\__pycache__\" />
+    <Folder Include="resources\" />
+    <Folder Include="resources\__pycache__\" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="ai\__pycache__\agent.cpython-314.pyc" />
+    <Content Include="ai\__pycache__\helper.cpython-314.pyc" />
+    <Content Include="ai\__pycache__\model.cpython-314.pyc" />
+    <Content Include="ai\__pycache__\__init__.cpython-314.pyc" />
+    <Content Include="assets\enemy.png" />
+    <Content Include="assets\enemy\0.png" />
+    <Content Include="assets\enemy\1.png" />
+    <Content Include="assets\enemy\2.png" />
+    <Content Include="assets\enemy\3.png" />
+    <Content Include="assets\food.png" />
+    <Content Include="assets\grave\grave0.png" />
+    <Content Include="assets\grave\grave1.png" />
+    <Content Include="assets\grave\grave10.png" />
+    <Content Include="assets\grave\grave11.png" />
+    <Content Include="assets\grave\grave12.png" />
+    <Content Include="assets\grave\grave13.png" />
+    <Content Include="assets\grave\grave14.png" />
+    <Content Include="assets\grave\grave15.png" />
+    <Content Include="assets\grave\grave2.png" />
+    <Content Include="assets\grave\grave3.png" />
+    <Content Include="assets\grave\grave4.png" />
+    <Content Include="assets\grave\grave5.png" />
+    <Content Include="assets\grave\grave6.png" />
+    <Content Include="assets\grave\grave7.png" />
+    <Content Include="assets\grave\grave8.png" />
+    <Content Include="assets\grave\grave9.png" />
+    <Content Include="assets\snake.png" />
+    <Content Include="assets\sounds\eat.mp3" />
+    <Content Include="assets\sounds\wall.mp3" />
+    <Content Include="assets\undo.png" />
+    <Content Include="controls\__pycache__\button.cpython-314.pyc" />
+    <Content Include="controls\__pycache__\checkbox.cpython-314.pyc" />
+    <Content Include="controls\__pycache__\checkGroup.cpython-314.pyc" />
+    <Content Include="controls\__pycache__\combobox.cpython-314.pyc" />
+    <Content Include="controls\__pycache__\controls.cpython-314.pyc" />
+    <Content Include="controls\__pycache__\form.cpython-314.pyc" />
+    <Content Include="controls\__pycache__\label.cpython-314.pyc" />
+    <Content Include="controls\__pycache__\listbox.cpython-314.pyc" />
+    <Content Include="controls\__pycache__\slider.cpython-314.pyc" />
+    <Content Include="controls\__pycache__\textBox.cpython-314.pyc" />
+    <Content Include="controls\__pycache__\__init__.cpython-314.pyc" />
+    <Content Include="readme.txt" />
+    <Content Include="resources\help.txt" />
+    <Content Include="resources\training.txt" />
+    <Content Include="resources\welcome.txt" />
+    <Content Include="resources\ai.txt" />
+    <Content Include="resources\__pycache__\__init__.cpython-314.pyc" />
+  </ItemGroup>
+  <ItemGroup>
+    <Interpreter Include=".venv\">
+      <Id>.venv</Id>
       <Version>3.14</Version>
-      <Description>env_games (Python 3.14 (64-bit))</Description>
+      <Description>.venv (Python 3.14 (64-bit))</Description>
       <InterpreterPath>Scripts\python.exe</InterpreterPath>
       <WindowsInterpreterPath>Scripts\pythonw.exe</WindowsInterpreterPath>
       <PathEnvironmentVariable>PYTHONPATH</PathEnvironmentVariable>
       <Architecture>X64</Architecture>
     </Interpreter>
-  </ItemGroup>
-  <ItemGroup>
-    <Folder Include="assets\" />
-    <Folder Include="sounds\" />
-  </ItemGroup>
-  <ItemGroup>
-    <Content Include="assets\enemy.png" />
-    <Content Include="assets\food.png" />
-    <Content Include="assets\grave0.png" />
-    <Content Include="assets\grave1.png" />
-    <Content Include="assets\grave10.png" />
-    <Content Include="assets\grave11.png" />
-    <Content Include="assets\grave12.png" />
-    <Content Include="assets\grave13.png" />
-    <Content Include="assets\grave14.png" />
-    <Content Include="assets\grave15.png" />
-    <Content Include="assets\grave2.png" />
-    <Content Include="assets\grave3.png" />
-    <Content Include="assets\grave4.png" />
-    <Content Include="assets\grave5.png" />
-    <Content Include="assets\grave6.png" />
-    <Content Include="assets\grave7.png" />
-    <Content Include="assets\grave8.png" />
-    <Content Include="assets\grave9.png" />
-    <Content Include="assets\snake.png" />
-    <Content Include="readme.txt" />
-    <Content Include="sounds\eat.mp3" />
-    <Content Include="sounds\wall.mp3" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\Python Tools\Microsoft.PythonTools.targets" />
   <!-- Uncomment the CoreCompile target to enable the Build command in

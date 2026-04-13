@@ -1,5 +1,8 @@
 import os
 
+def bool_to_str(f):
+    return True if f else False
+
 def read_variables_from_file(file_path):
     """
     Reads key=value pairs from a text file and returns them as a dictionary.
@@ -36,5 +39,6 @@ def read_variables_from_file(file_path):
                     variables[key] = value  # Keep as string if conversion fails
 
     return variables
+
 
 

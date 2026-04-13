@@ -1,0 +1,17 @@
+Check how AI plays the game of snake 
+This AI hdid not have any knoledge how to play
+
+AI learn it usign training 
+
+The goal of the game is grow, grow and grow.
+To grow snake need a food. 
+This won't the problems : a lot of tasty apples will be around.
+
+AI be caution! 
+The mongooses are need food too and snake are their favorite food.
+
+Others very dangerous spots  are the edges of the field. 
+Snake can't live without moving.
+The edge stops and kills the snake
+
+Press SPACE or click button "Start" to start AI play

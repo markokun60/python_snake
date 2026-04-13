@@ -1,0 +1,9 @@
+There are 2 modes how snake can grow:
+By food  only
+    Snake grow only after eating the apple
+By food and steps
+    After eating apple 
+        snake grows by 3% of field size
+    After 10 steps 
+        snake grow by 1 unit  
+             
